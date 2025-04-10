@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini Roulette ⚡</title>
+  <style>
+    body { font-family: sans-serif; background: #111; color: #fff; text-align: center; padding: 2rem; }
+    input, select, button { padding: 0.5rem; margin: 0.5rem; border-radius: 5px; border: none; }
+    .btn { background: #28c; color: #fff; cursor: pointer; }
+    .wheel { font-size: 2rem; margin: 1rem 0; animation: spin 2s ease; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(1440deg); } }
+    .history { margin-top: 1rem; font-size: 0.9rem; color: #aaa; }
+  </style>
+</head>
+<body>
+  <h1>Mini Roulette ⚡</h1>
+
+  <p>Bakiye: <span id="balance">0</span> sats</p>
+
+  <input type="text" id="lnaddress" placeholder="sen@speedwallet.me" />
+  <button class="btn" onclick="addBalance()">+500 sats yükle</button><br/>
+
+  <input type="number" id="bet" placeholder="Bahis (sats)" min="1" /><br/>
+
+  <select id="number">
+    <option disabled selected>Sayı seç (1-10)</option>
+    ${[...Array(10).keys()].map(i => `<option value="${i+1}">${i+1}</option>`).join('')}
+  </select>
+
+  <select id="color">
+    <option disabled selected>Renk seç</option>
+    <option value="red">Kırmızı</option>
+    <option value="black">Siyah</option>
+  </select><br/>
+
+  <button class="btn" onclick="play()">Oyna</button>
+
+  <div id="wheel" class="wheel"></div>
+  <div id="result"></div>
+
+  <div class="history">
+    <h3>Sonuçlar</h3>
+    <ul id="history"></ul>
+  </div>
+
+  <script>
+    let balance = 0;
+    const balanceSpan = document.getElementById('balance');
+    const historyList = document.getElementById('history');
+
+    function addBalance() {
+      const ln = document.getElementById('lnaddress').value;
+      if (!ln) return alert('LN adresi giriniz.');
+      balance += 500;
+      balanceSpan.textContent = balance;
+      alert('500 sats yüklendi (simülasyon)');
+    }
+
+    function getRandomNumber() { return Math.floor(Math.random() * 10) + 1; }
+    function getRandomColor() { return Math.random() < 0.5 ? 'red' : 'black'; }
+
+    function play() {
+      const bet = parseInt(document.getElementById('bet').value);
+      const number = parseInt(document.getElementById('number').value);
+      const color = document.getElementById('color').value;
+
+      if (!bet || !number || !color) return alert('Tüm alanları doldurun.');
+      if (bet > balance) return alert('Yetersiz bakiye.');
+
+      balance -= bet;
+      balanceSpan.textContent = balance;
+
+      const resultNumber = getRandomNumber();
+      const resultColor = getRandomColor();
+
+      document.getElementById('wheel').textContent = '🎯 Çark dönüyor...';
+      setTimeout(() => {
+        document.getElementById('wheel').textContent = `🎯 ${resultNumber} - ${resultColor}`;
+        let reward = 0;
+        if (resultNumber === number) reward = bet * 2;
+        else if (resultColor === color) reward = Math.floor(bet / 2);
+
+        balance += reward;
+        balanceSpan.textContent = balance;
+
+        document.getElementById('result').innerHTML = `Kazanç: ${reward} sats`;
+
+        const li = document.createElement('li');
+        li.textContent = `${resultNumber} - ${resultColor} → +${reward} sats`;
+        historyList.prepend(li);
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
